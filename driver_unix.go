@@ -186,7 +186,8 @@ func (c *context) alsaPcmHwParams(sampleRate, channelCount int, bufferSize, peri
 	if err := C.snd_pcm_hw_params_set_access(c.handle, params, C.SND_PCM_ACCESS_RW_INTERLEAVED); err < 0 {
 		return alsaError("snd_pcm_hw_params_set_access", err)
 	}
-	if err := C.snd_pcm_hw_params_set_format(c.handle, params, C.SND_PCM_FORMAT_FLOAT_LE); err < 0 {
+	// if err := C.snd_pcm_hw_params_set_format(c.handle, params, C.SND_PCM_FORMAT_FLOAT_LE); err < 0 {
+	if err := C.snd_pcm_hw_params_set_format(c.handle, params, C.SND_PCM_FORMAT_S16_LE); err < 0 {
 		return alsaError("snd_pcm_hw_params_set_format", err)
 	}
 	if err := C.snd_pcm_hw_params_set_channels(c.handle, params, C.unsigned(channelCount)); err < 0 {
