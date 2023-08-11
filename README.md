@@ -3,6 +3,9 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/ebitengine/oto/v3.svg)](https://pkg.go.dev/github.com/ebitengine/oto/v3)
 [![Build Status](https://github.com/ebitengine/oto/actions/workflows/test.yml/badge.svg)](https://github.com/ebitengine/oto/actions?query=workflow%3Atest)
 
+> [!IMPORTANT]
+> This is an almost unmantained fork of [ebitengine/oto](https://github.com/ebitengine/oto). The only difference is that the ALSA driver works with S16LE format, as some USB sound cards support only that. That's probably not generally useful and fitting it into the original library would be cumbersome.
+
 A low-level library to play sound.
 
 - [Oto (v3)](#oto-v3)
@@ -122,7 +125,7 @@ func main() {
     op.SampleRate = 44100
 
     // Number of channels (aka locations) to play sounds from. Either 1 or 2.
-    // 1 is mono sound, and 2 is stereo (most speakers are stereo). 
+    // 1 is mono sound, and 2 is stereo (most speakers are stereo).
     op.ChannelCount = 2
 
     // Format of the source. go-mp3's format is signed 16bit integers.
@@ -138,7 +141,7 @@ func main() {
 
     // Create a new 'player' that will handle our sound. Paused by default.
     player := otoCtx.NewPlayer(decodedMp3)
-    
+
     // Play starts playing the sound and returns without waiting for it (Play() is async).
     player.Play()
 
@@ -230,5 +233,5 @@ This works because players implement a `Player` interface and a `BufferSizeSette
 
 Crosscompiling to macOS or Windows is as easy as setting `GOOS=darwin` or `GOOS=windows`, respectively.
 
-To crosscompile for other platforms, make sure the libraries for the target architecture are installed, and set 
+To crosscompile for other platforms, make sure the libraries for the target architecture are installed, and set
 `CGO_ENABLED=1` as Go disables [Cgo](https://golang.org/cmd/cgo/#hdr-Using_cgo_with_the_go_command) on crosscompiles by default.
