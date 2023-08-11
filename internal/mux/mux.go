@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"runtime"
 	"sync"
 	"time"
@@ -136,7 +135,7 @@ func (m *Mux) removePlayer(player *playerImpl) {
 }
 
 // ReadFloat32s fills buf with the multiplexed data of the players as float32 values.
-func (m *Mux) ReadFloat32s(buf []float32) {
+func (m *Mux) ReadFloat32s(buf []int16) {
 	m.cond.L.Lock()
 	players := make([]*playerImpl, 0, len(m.players))
 	for p := range m.players {
@@ -437,7 +436,7 @@ func (p *playerImpl) closeImpl() error {
 	return p.err
 }
 
-func (p *playerImpl) readBufferAndAdd(buf []float32) int {
+func (p *playerImpl) readBufferAndAdd(buf []int16) int {
 	p.m.Lock()
 	defer p.m.Unlock()
 
@@ -461,27 +460,26 @@ func (p *playerImpl) readBufferAndAdd(buf []float32) int {
 	src := p.buf[:n*bitDepthInBytes]
 
 	for i := 0; i < n; i++ {
-		var v float32
+		var v int16
 		switch format {
 		case FormatFloat32LE:
-			v = math.Float32frombits(uint32(src[4*i]) | uint32(src[4*i+1])<<8 | uint32(src[4*i+2])<<16 | uint32(src[4*i+3])<<24)
+			// v = math.Float32frombits(uint32(src[4*i]) | uint32(src[4*i+1])<<8 | uint32(src[4*i+2])<<16 | uint32(src[4*i+3])<<24)
+			panic("lemur was too lazy to implement this")
 		case FormatUnsignedInt8:
-			v8 := src[i]
-			v = float32(v8-(1<<7)) / (1 << 7)
+			v = int16(src[i])
 		case FormatSignedInt16LE:
-			v16 := int16(src[2*i]) | (int16(src[2*i+1]) << 8)
-			v = float32(v16) / (1 << 15)
+			v = int16(src[2*i]) | int16(src[2*i+1])<<8
 		default:
 			panic(fmt.Sprintf("mux: unexpected format: %d", format))
 		}
 		if volume == prevVolume {
-			buf[i] += v * volume
+			buf[i] += int16(float32(v) * volume)
 		} else {
 			rate := float32(i/channelCount) / rateDenom
 			if rate > 1 {
 				rate = 1
 			}
-			buf[i] += v * (volume*rate + prevVolume*(1-rate))
+			buf[i] += int16(float32(v) * (volume*rate + prevVolume*(1-rate)))
 		}
 	}
 

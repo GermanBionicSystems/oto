@@ -163,7 +163,7 @@ func newContext(sampleRate int, channelCount int, format mux.Format, bufferSizeI
 		}
 
 		go func() {
-			buf32 := make([]float32, int(periodSize)*channelCount)
+			buf32 := make([]int16, int(periodSize)*channelCount)
 			for {
 				if !c.readAndWrite(buf32) {
 					return
@@ -186,7 +186,8 @@ func (c *context) alsaPcmHwParams(sampleRate, channelCount int, bufferSize, peri
 	if err := C.snd_pcm_hw_params_set_access(c.handle, params, C.SND_PCM_ACCESS_RW_INTERLEAVED); err < 0 {
 		return alsaError("snd_pcm_hw_params_set_access", err)
 	}
-	// if err := C.snd_pcm_hw_params_set_format(c.handle, params, C.SND_PCM_FORMAT_FLOAT_LE); err < 0 {
+
+	// NOTE(lemur): This needed to change since some usb sound cards do not support floating point PCM
 	if err := C.snd_pcm_hw_params_set_format(c.handle, params, C.SND_PCM_FORMAT_S16_LE); err < 0 {
 		return alsaError("snd_pcm_hw_params_set_format", err)
 	}
@@ -212,7 +213,7 @@ func (c *context) alsaPcmHwParams(sampleRate, channelCount int, bufferSize, peri
 	return nil
 }
 
-func (c *context) readAndWrite(buf32 []float32) bool {
+func (c *context) readAndWrite(buf32 []int16) bool {
 	c.cond.L.Lock()
 	defer c.cond.L.Unlock()
 
